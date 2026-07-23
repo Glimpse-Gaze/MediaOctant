@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f8ff;
+  --bg-accent: #e8fff6;
+  --ink: #1a2433;
+  --muted: #5b6b7c;
+  --card: #ffffffcc;
+  --line: #d7e3f4;
+  --cyan: #22c5c5;
+  --lime: #7ce38b;
+  --coral: #ff7a59;
+  --violet: #7b6cff;
+  --sun: #ffd166;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--bg);
+}
+
+/* Fixed atmosphere so glows stay in the viewport while content scrolls */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #d9fff0 0%, transparent 55%),
+    radial-gradient(900px 500px at 90% 0%, #d6e4ff 0%, transparent 50%),
+    radial-gradient(700px 400px at 70% 100%, #ffe8d6 0%, transparent 45%);
+}
+
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+::selection {
+  background: color-mix(in oklab, var(--cyan) 40%, white);
+}

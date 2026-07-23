@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model MediaForm {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fixedTraits   FixedTraitValue[]
+  freeformTraits FreeformTrait[]
+  examples      MediaExample[]
+}
+
+model TraitDefinition {
+  id        String @id @default(cuid())
+  code      String @unique
+  name      String
+  minValue  Float  @default(0)
+  maxValue  Float  @default(10)
+  sortOrder Int    @default(0)
+
+  values FixedTraitValue[]
+}
+
+model FixedTraitValue {
+  id      String @id @default(cuid())
+  formId  String
+  traitId String
+  value   Float
+
+  form  MediaForm       @relation(fields: [formId], references: [id], onDelete: Cascade)
+  trait TraitDefinition @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, traitId])
+}
+
+model FreeformTrait {
+  id              String @id @default(cuid())
+  formId          String
+  nameDisplay     String
+  valueDisplay    String
+  nameNormalized  String
+  valueNormalized String
+
+  form MediaForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([nameNormalized, valueNormalized])
+}
+
+model MediaExample {
+  id          String  @id @default(cuid())
+  formId      String
+  kind        String // image | video
+  url         String?
+  storagePath String?
+  caption     String  @default("")
+  sortOrder   Int     @default(0)
+
+  form MediaForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+}
