@@ -1,13 +1,24 @@
 import { AtlasWithFilters } from "@/components/AtlasWithFilters";
-import { getFormsForAtlas } from "@/lib/forms";
+import { getFormsForAtlas, getTraitDefinitions } from "@/lib/forms";
 import { layoutAtlas } from "@/lib/similarity";
 import { listTagsWithCounts } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [forms, tags] = await Promise.all([getFormsForAtlas(), listTagsWithCounts()]);
+  const [forms, tags, traitDefs] = await Promise.all([
+    getFormsForAtlas(),
+    listTagsWithCounts(),
+    getTraitDefinitions(),
+  ]);
   const { nodes, edges } = layoutAtlas(forms);
+
+  const traits = traitDefs.map((t) => ({
+    code: t.code,
+    name: t.name,
+    minValue: t.minValue,
+    maxValue: t.maxValue,
+  }));
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
@@ -22,16 +33,23 @@ export default async function HomePage() {
           A playful map of media forms
         </h1>
         <p className="mt-3 text-base text-[var(--muted)] md:text-lg">
-          Proximity comes from shared trait profiles — visual, auditory, liveness, and more.
-          Use tags below to filter the map without changing layout.
+          Proximity comes from shared trait profiles. Switch views to encode a trait as color &amp;
+          size or heat, and click a node for its profile — without moving the layout.
         </p>
       </section>
 
       <AtlasWithFilters
         nodes={nodes}
         edges={edges}
-        forms={forms.map((f) => ({ id: f.id, tags: f.tags }))}
+        forms={forms.map((f) => ({
+          id: f.id,
+          name: f.name,
+          slug: f.slug,
+          tags: f.tags,
+          fixed: f.fixed,
+        }))}
         tags={tags}
+        traits={traits}
       />
     </div>
   );

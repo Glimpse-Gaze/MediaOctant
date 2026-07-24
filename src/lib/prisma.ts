@@ -15,10 +15,11 @@ function hasTagDelegate(client: PrismaClient | undefined): client is PrismaClien
 function getClient(): PrismaClient {
   if (!hasTagDelegate(globalForPrisma.prisma)) {
     // Dev HMR can keep a pre-Tag schema client; replace it.
-    void globalForPrisma.prisma?.$disconnect().catch(() => undefined);
+    const stale = globalForPrisma.prisma as PrismaClient | undefined;
+    void stale?.$disconnect().catch(() => undefined);
     globalForPrisma.prisma = createClient();
   }
-  return globalForPrisma.prisma;
+  return globalForPrisma.prisma!;
 }
 
 /** Always resolves to a client that matches the current schema (safe under Next.js HMR). */
