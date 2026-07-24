@@ -7,9 +7,11 @@ import type { AtlasEdge, AtlasNode } from "@/lib/similarity";
 type Props = {
   nodes: AtlasNode[];
   edges: AtlasEdge[];
+  /** When set, nodes not in this set are dimmed/hidden */
+  visibleIds?: Set<string> | null;
 };
 
-export function AtlasCanvas({ nodes, edges }: Props) {
+export function AtlasCanvas({ nodes, edges, visibleIds = null }: Props) {
   const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
   const [showEdges, setShowEdges] = useState(true);
@@ -26,6 +28,11 @@ export function AtlasCanvas({ nodes, edges }: Props) {
     setSize({ w: el.clientWidth, h: Math.max(480, el.clientHeight) });
     return () => ro.disconnect();
   }, []);
+
+  const filtering = visibleIds !== null;
+  const visibleCount = filtering
+    ? nodes.filter((n) => visibleIds!.has(n.id)).length
+    : nodes.length;
 
   const placed = useMemo(() => {
     if (!nodes.length) return [];
@@ -82,12 +89,22 @@ export function AtlasCanvas({ nodes, edges }: Props) {
             backgroundSize: "22px 22px",
           }}
         />
+        {filtering && visibleCount === 0 ? (
+          <div className="absolute inset-0 z-20 flex items-center justify-center px-6 text-center">
+            <p className="rounded-2xl bg-white/90 px-5 py-4 text-sm font-semibold text-[var(--muted)] shadow-sm">
+              No forms match the selected tags. Try Any mode or clear the filter.
+            </p>
+          </div>
+        ) : null}
         <svg ref={svgRef} width={size.w} height={size.h} className="relative z-10">
           {showEdges &&
             edges.map((e) => {
               const a = byId[e.source];
               const b = byId[e.target];
               if (!a || !b) return null;
+              if (filtering && (!visibleIds!.has(e.source) || !visibleIds!.has(e.target))) {
+                return null;
+              }
               const active =
                 !hovered || hovered === e.source || hovered === e.target;
               return (
@@ -114,6 +131,24 @@ export function AtlasCanvas({ nodes, edges }: Props) {
           </defs>
 
           {placed.map((n, i) => {
+            const isVisible = !filtering || visibleIds!.has(n.id);
+            if (filtering && !isVisible) {
+              return (
+                <g
+                  key={n.id}
+                  transform={`translate(${n.px}, ${n.py})`}
+                  opacity={0.12}
+                  style={{ transition: "opacity 200ms ease", pointerEvents: "none" }}
+                >
+                  <circle
+                    r={12}
+                    fill={palette[i % palette.length]}
+                    stroke="white"
+                    strokeWidth={2}
+                  />
+                </g>
+              );
+            }
             const dim = hovered && hovered !== n.id;
             return (
               <g

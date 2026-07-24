@@ -20,6 +20,7 @@ export default async function EditFormPage({ params }: Props) {
         fixedTraits: { include: { trait: true } },
         freeformTraits: true,
         examples: { orderBy: { sortOrder: "asc" } },
+        tags: { include: { tag: true }, orderBy: { tag: { name: "asc" } } },
       },
     }),
   ]);
@@ -46,6 +47,7 @@ export default async function EditFormPage({ params }: Props) {
             nameDisplay: t.nameDisplay,
             valueDisplay: t.valueDisplay,
           })),
+          tags: form.tags.map((l) => l.tag.name),
           examples: form.examples,
         }}
       />

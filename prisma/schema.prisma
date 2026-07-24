@@ -15,9 +15,28 @@ model MediaForm {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  fixedTraits   FixedTraitValue[]
+  fixedTraits    FixedTraitValue[]
   freeformTraits FreeformTrait[]
-  examples      MediaExample[]
+  examples       MediaExample[]
+  tags           MediaFormTag[]
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  forms MediaFormTag[]
+}
+
+model MediaFormTag {
+  formId String
+  tagId  String
+
+  form MediaForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  tag  Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([formId, tagId])
 }
 
 model TraitDefinition {

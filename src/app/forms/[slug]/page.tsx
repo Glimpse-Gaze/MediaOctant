@@ -35,6 +35,19 @@ export default async function FormDetailPage({ params }: Props) {
           {form.description ? (
             <p className="mt-3 max-w-2xl text-[var(--muted)]">{form.description}</p>
           ) : null}
+          {form.tags.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {form.tags.map((link) => (
+                <Link
+                  key={link.tag.id}
+                  href={`/forms?tags=${encodeURIComponent(link.tag.slug)}`}
+                  className="rounded-full bg-gradient-to-r from-[#e8fff6] to-[#e8eeff] px-3 py-1 text-sm font-semibold transition hover:opacity-80"
+                >
+                  {link.tag.name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
         {admin ? (
           <Link

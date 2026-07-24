@@ -68,9 +68,11 @@ const FORMS: Array<{
 
 async function main() {
   await prisma.mediaExample.deleteMany();
+  await prisma.mediaFormTag.deleteMany();
   await prisma.freeformTrait.deleteMany();
   await prisma.fixedTraitValue.deleteMany();
   await prisma.mediaForm.deleteMany();
+  await prisma.tag.deleteMany();
   await prisma.traitDefinition.deleteMany();
 
   const traits = [];
@@ -105,7 +107,7 @@ async function main() {
     });
   }
 
-  // Demo freeform overlap: Japan on two forms so proximity bonus is visible
+  // Demo freeform overlap: Japan on three forms so proximity bonus is visible
   const tachi = await prisma.mediaForm.findUniqueOrThrow({
     where: { slug: "tachi-e-kamishibai" },
   });
@@ -114,6 +116,16 @@ async function main() {
   });
   const kabuki = await prisma.mediaForm.findUniqueOrThrow({
     where: { slug: "kabuki-theatre" },
+  });
+  const opera = await prisma.mediaForm.findUniqueOrThrow({ where: { slug: "opera" } });
+  const sculpture = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "sculpture" },
+  });
+  const ukiyoe = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "ukiyo-e-averaged" },
+  });
+  const shadow = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "shadow-play" },
   });
 
   for (const form of [tachi, hira, kabuki]) {
@@ -128,7 +140,31 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${TRAITS.length} traits and ${FORMS.length} media forms.`);
+  const japan = await prisma.tag.create({ data: { name: "Japan", slug: "japan" } });
+  const performance = await prisma.tag.create({
+    data: { name: "performance", slug: "performance" },
+  });
+  const visualArt = await prisma.tag.create({
+    data: { name: "visual-art", slug: "visual-art" },
+  });
+
+  async function link(formId: string, tagId: string) {
+    await prisma.mediaFormTag.create({ data: { formId, tagId } });
+  }
+
+  for (const form of [tachi, hira, kabuki, ukiyoe]) {
+    await link(form.id, japan.id);
+  }
+  for (const form of [opera, kabuki, shadow, tachi, hira]) {
+    await link(form.id, performance.id);
+  }
+  for (const form of [sculpture, ukiyoe]) {
+    await link(form.id, visualArt.id);
+  }
+
+  console.log(
+    `Seeded ${TRAITS.length} traits, ${FORMS.length} media forms, and 3 demo tags.`,
+  );
 }
 
 main()

@@ -1,11 +1,12 @@
-import { AtlasCanvas } from "@/components/AtlasCanvas";
-import { getFormsForSimilarity } from "@/lib/forms";
+import { AtlasWithFilters } from "@/components/AtlasWithFilters";
+import { getFormsForAtlas } from "@/lib/forms";
 import { layoutAtlas } from "@/lib/similarity";
+import { listTagsWithCounts } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const forms = await getFormsForSimilarity();
+  const [forms, tags] = await Promise.all([getFormsForAtlas(), listTagsWithCounts()]);
   const { nodes, edges } = layoutAtlas(forms);
 
   return (
@@ -21,12 +22,17 @@ export default async function HomePage() {
           A playful map of media forms
         </h1>
         <p className="mt-3 text-base text-[var(--muted)] md:text-lg">
-          Proximity comes from shared trait profiles — visual, auditory, liveness, and more —
-          with a boost when freeform tags match.
+          Proximity comes from shared trait profiles — visual, auditory, liveness, and more.
+          Use tags below to filter the map without changing layout.
         </p>
       </section>
 
-      <AtlasCanvas nodes={nodes} edges={edges} />
+      <AtlasWithFilters
+        nodes={nodes}
+        edges={edges}
+        forms={forms.map((f) => ({ id: f.id, tags: f.tags }))}
+        tags={tags}
+      />
     </div>
   );
 }

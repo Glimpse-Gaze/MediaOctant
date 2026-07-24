@@ -22,6 +22,7 @@ For product decisions and roadmap, see [PLAN.md](./PLAN.md). Sample trait data l
   - RAU Representational Autonomy  
   - TMP Temporal Structuring  
 - **Freeform traits** — custom name/value pairs; proximity bonus when two forms share the same pair (normalized exact match today; fuzzy synonyms planned later)
+- **Tags** — simple labels for filtering only (do not affect atlas proximity). Free-type on admin edit with autocomplete; filter panel on Atlas and Browse with Any (OR) / All (AND) modes. Filter state in the URL (`?tags=japan,performance&mode=and`)
 - **Atlas** — 2D layout from trait distance + toggleable similarity edges
 - **Examples** — image/video via file upload or external URL
 - **Admin** — password-gated create/edit; public browse/detail
@@ -106,6 +107,7 @@ media-forms/
 | `/api/forms` | List / create forms |
 | `/api/forms/[id]` | Get / update / delete form |
 | `/api/forms/[id]/examples` | Add/remove examples (JSON URL or multipart upload) |
+| `/api/tags` | List tags with usage counts; optional `?q=` autocomplete |
 
 ### `src/components` — UI
 
@@ -113,6 +115,9 @@ media-forms/
 |------|------|
 | `SiteHeader.tsx` | Nav (Atlas, Browse, Admin) |
 | `AtlasCanvas.tsx` | Interactive SVG map + edge toggle |
+| `AtlasWithFilters.tsx` | Atlas + tag filter panel (URL sync) |
+| `BrowseWithFilters.tsx` | Browse grid + tag filter panel |
+| `TagFilterPanel.tsx` | Filter chips, Any/All mode, admin tag chip input |
 | `TraitBars.tsx` | Fixed-trait bars on detail pages |
 | `ExampleGallery.tsx` | Image / video / YouTube embeds |
 | `FormEditor.tsx` | Admin create/edit form |
@@ -127,6 +132,7 @@ media-forms/
 | `forms.ts` | Form queries for pages/API |
 | `normalize.ts` | Freeform text normalize + slug helper |
 | `similarity.ts` | Distance, neighbors, MDS layout |
+| `tags.ts` | Tag normalize, assign, filter match, URL helpers |
 
 ### Data model (Prisma)
 
@@ -134,6 +140,7 @@ media-forms/
 - **TraitDefinition** — fixed trait catalog (code, name, 0–10)  
 - **FixedTraitValue** — form × trait score  
 - **FreeformTrait** — display + normalized name/value  
+- **Tag** / **MediaFormTag** — filter labels (many-to-many)  
 - **MediaExample** — `image` \| `video`, either `url` or `storagePath`  
 
 ---

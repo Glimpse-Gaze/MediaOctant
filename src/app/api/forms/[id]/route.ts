@@ -3,6 +3,7 @@ import { z } from "zod";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { makeSlug, normalizeTraitText } from "@/lib/normalize";
+import { setFormTags, pruneUnusedTags } from "@/lib/tags";
 
 const freeformSchema = z.object({
   nameDisplay: z.string().min(1),
@@ -15,6 +16,7 @@ const formSchema = z.object({
   slug: z.string().optional(),
   fixedTraits: z.record(z.string(), z.number().min(0).max(10)),
   freeformTraits: z.array(freeformSchema).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
 });
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -27,6 +29,7 @@ export async function GET(_request: Request, ctx: Ctx) {
       fixedTraits: { include: { trait: true } },
       freeformTraits: true,
       examples: { orderBy: { sortOrder: "asc" } },
+      tags: { include: { tag: true }, orderBy: { tag: { name: "asc" } } },
     },
   });
   if (!form) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -83,6 +86,8 @@ export async function PUT(request: Request, ctx: Ctx) {
           })),
         });
       }
+
+      await setFormTags(id, data.tags, tx);
     });
 
     const form = await prisma.mediaForm.findUnique({ where: { id } });
@@ -99,5 +104,6 @@ export async function DELETE(_request: Request, ctx: Ctx) {
   }
   const { id } = await ctx.params;
   await prisma.mediaForm.delete({ where: { id } });
+  await pruneUnusedTags();
   return NextResponse.json({ ok: true });
 }

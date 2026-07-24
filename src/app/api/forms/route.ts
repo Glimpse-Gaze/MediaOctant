@@ -4,6 +4,7 @@ import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { makeSlug, normalizeTraitText } from "@/lib/normalize";
 import { listForms } from "@/lib/forms";
+import { setFormTags } from "@/lib/tags";
 
 const freeformSchema = z.object({
   nameDisplay: z.string().min(1),
@@ -16,6 +17,7 @@ const formSchema = z.object({
   slug: z.string().optional(),
   fixedTraits: z.record(z.string(), z.number().min(0).max(10)),
   freeformTraits: z.array(freeformSchema).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
 });
 
 export async function GET() {
@@ -38,26 +40,30 @@ export async function POST(request: Request) {
   const traits = await prisma.traitDefinition.findMany();
 
   try {
-    const form = await prisma.mediaForm.create({
-      data: {
-        name: data.name.trim(),
-        slug,
-        description: data.description ?? "",
-        fixedTraits: {
-          create: traits.map((t) => ({
-            traitId: t.id,
-            value: data.fixedTraits[t.code] ?? 0,
-          })),
+    const form = await prisma.$transaction(async (tx) => {
+      const created = await tx.mediaForm.create({
+        data: {
+          name: data.name.trim(),
+          slug,
+          description: data.description ?? "",
+          fixedTraits: {
+            create: traits.map((t) => ({
+              traitId: t.id,
+              value: data.fixedTraits[t.code] ?? 0,
+            })),
+          },
+          freeformTraits: {
+            create: data.freeformTraits.map((t) => ({
+              nameDisplay: t.nameDisplay.trim(),
+              valueDisplay: t.valueDisplay.trim(),
+              nameNormalized: normalizeTraitText(t.nameDisplay),
+              valueNormalized: normalizeTraitText(t.valueDisplay),
+            })),
+          },
         },
-        freeformTraits: {
-          create: data.freeformTraits.map((t) => ({
-            nameDisplay: t.nameDisplay.trim(),
-            valueDisplay: t.valueDisplay.trim(),
-            nameNormalized: normalizeTraitText(t.nameDisplay),
-            valueNormalized: normalizeTraitText(t.valueDisplay),
-          })),
-        },
-      },
+      });
+      await setFormTags(created.id, data.tags, tx);
+      return created;
     });
     return NextResponse.json({ form }, { status: 201 });
   } catch (e) {

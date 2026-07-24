@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { TagChipInput } from "@/components/TagFilterPanel";
 
 type TraitDef = { id: string; code: string; name: string; minValue: number; maxValue: number };
 
@@ -23,6 +24,7 @@ type Props = {
     description: string;
     fixedTraits: Record<string, number>;
     freeformTraits: Array<{ nameDisplay: string; valueDisplay: string }>;
+    tags?: string[];
     examples: Example[];
   };
 };
@@ -46,6 +48,7 @@ export function FormEditor({ traits, initial }: Props) {
   const [freeform, setFreeform] = useState<FreeformRow[]>(
     () => initial?.freeformTraits ?? [],
   );
+  const [tags, setTags] = useState<string[]>(() => initial?.tags ?? []);
   const [examples, setExamples] = useState(initial?.examples ?? []);
   const [neighbors, setNeighbors] = useState<
     Array<{ id: string; name: string; slug: string; similarity: number }>
@@ -65,6 +68,7 @@ export function FormEditor({ traits, initial }: Props) {
     setDescription(initial?.description ?? "");
     setFixed(defaultFixed(traits, initial));
     setFreeform(initial?.freeformTraits ?? []);
+    setTags(initial?.tags ?? []);
     setExamples(initial?.examples ?? []);
     // Only when the edited form identity changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
@@ -85,8 +89,9 @@ export function FormEditor({ traits, initial }: Props) {
       description,
       fixedTraits: fixed,
       freeformTraits: freeform.filter((t) => t.nameDisplay.trim() && t.valueDisplay.trim()),
+      tags,
     }),
-    [name, slug, description, fixed, freeform],
+    [name, slug, description, fixed, freeform, tags],
   );
 
   async function onSubmit(e: FormEvent) {
@@ -167,7 +172,27 @@ export function FormEditor({ traits, initial }: Props) {
           />
         </label>
         <label className="block text-sm font-semibold">
-          Slug
+          <span className="inline-flex items-center gap-1.5">
+            Slug
+            <span className="group relative inline-flex">
+              <button
+                type="button"
+                tabIndex={0}
+                aria-label="What is a slug?"
+                className="flex h-4 w-4 items-center justify-center rounded-full border border-[var(--line)] bg-white text-[10px] font-bold leading-none text-[var(--muted)] hover:border-[var(--violet)] hover:text-[var(--violet)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)]"
+              >
+                ?
+              </button>
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-left text-xs font-normal leading-snug text-[var(--muted)] opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+              >
+                URL-safe id for this form (e.g.{" "}
+                <span className="font-semibold text-[var(--ink)]">/forms/opera</span>
+                ). Auto-filled from the name if left blank; keep it unique.
+              </span>
+            </span>
+          </span>
           <input
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
@@ -186,6 +211,16 @@ export function FormEditor({ traits, initial }: Props) {
           className="mt-1 w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2"
         />
       </label>
+
+      <section className="rounded-3xl border border-[var(--line)] bg-white/70 p-5">
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">Tags</h2>
+        <p className="mt-1 text-xs text-[var(--muted)]">
+          Used for filtering on Atlas and Browse. Type freely; existing tags autocomplete.
+        </p>
+        <div className="mt-3">
+          <TagChipInput value={tags} onChange={setTags} />
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-[var(--line)] bg-white/70 p-5">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
