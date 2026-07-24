@@ -53,20 +53,6 @@ export function AtlasSelectPanel({
         </button>
       </div>
 
-      {form.tags.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {form.tags.map((t) => (
-            <Link
-              key={t.id}
-              href={`/forms${buildFilterQuery([t.slug], "or")}`}
-              className="rounded-full bg-gradient-to-r from-[#e8fff6] to-[#e8eeff] px-2.5 py-0.5 text-xs font-semibold transition hover:opacity-80"
-            >
-              {t.name}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         <h3 className="font-[family-name:var(--font-display)] text-sm font-bold">
           Trait profile
@@ -87,9 +73,30 @@ export function AtlasSelectPanel({
         />
       </div>
 
+      <div className="mt-4 min-h-[3.25rem]">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+          Tags
+        </p>
+        {form.tags.length > 0 ? (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {form.tags.map((t) => (
+              <Link
+                key={t.id}
+                href={`/forms${buildFilterQuery([t.slug], "or")}`}
+                className="rounded-full bg-gradient-to-r from-[#e8fff6] to-[#e8eeff] px-2.5 py-0.5 text-xs font-semibold transition hover:opacity-80"
+              >
+                {t.name}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-1.5 text-xs text-[var(--muted)]">No tags</p>
+        )}
+      </div>
+
       <Link
         href={`/forms/${form.slug}`}
-        className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+        className="mt-3 inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
       >
         Open detail
       </Link>
