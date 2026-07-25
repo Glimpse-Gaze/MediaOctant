@@ -50,70 +50,16 @@ No hierarchy tables in v1.
 
 ## Data model
 
-```mermaid
-erDiagram
-  MediaForm ||--o{ FixedTraitValue : has
-  MediaForm ||--o{ FreeformTrait : has
-  MediaForm ||--o{ MediaExample : has
-  TraitDefinition ||--o{ FixedTraitValue : defines
+**Live schema docs:** [DATABASE.md](./DATABASE.md) (keep in sync with [`prisma/schema.prisma`](./prisma/schema.prisma)).
 
-  MediaForm {
-    string id
-    string name
-    string slug
-    string description
-    datetime createdAt
-    datetime updatedAt
-  }
+Product shape (unchanged intent):
 
-  TraitDefinition {
-    string id
-    string code
-    string name
-    float minValue
-    float maxValue
-    int sortOrder
-  }
-
-  FixedTraitValue {
-    string formId
-    string traitId
-    float value
-  }
-
-  FreeformTrait {
-    string id
-    string formId
-    string nameNormalized
-    string valueNormalized
-    string nameDisplay
-    string valueDisplay
-  }
-
-  MediaExample {
-    string id
-    string formId
-    string kind
-    string url
-    string storagePath
-    string caption
-    int sortOrder
-  }
-```
-
-**Notes**
-
-- Seed `TraitDefinition` with the 8 fixed traits on first run; import spreadsheet rows as starter `MediaForm` + values.  
-- Store freeform display strings and normalized keys (`nameNormalized`, `valueNormalized`) for matching.  
-- `MediaExample.kind`: `image` | `video`; either `url` (external) or `storagePath` (upload).  
-- Similarity is **computed at read time** (or cached), not stored as a graph table in v1.
-
-### Mixed traits → “how the DB looks”
-
-- **Catalog:** `TraitDefinition` (fixed vocabulary).  
-- **Scores:** `FixedTraitValue` (form × trait → number).  
-- **Custom:** `FreeformTrait` (form → name/value pairs).  
-- Comparable dimensions stay structured; freeform stays flexible without polluting the fixed schema.
+- **Catalog:** `TraitDefinition` (fixed vocabulary) + `MediaForm`.
+- **Scores:** `FixedTraitValue` (form × trait → number).
+- **Custom:** `FreeformTrait` (form → name/value pairs; normalized for matching).
+- **Tags:** `Tag` / `MediaFormTag` — filter only; do not affect proximity.
+- **Examples:** `MediaExample` (`image` \| `video`; `url` and/or `storagePath`).
+- Similarity / layout is **computed at read time**, not stored as a graph table in v1.
 
 ---
 

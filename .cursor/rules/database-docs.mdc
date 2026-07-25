@@ -1,0 +1,17 @@
+---
+description: Keep DATABASE.md in sync when Prisma schema changes
+globs: prisma/schema.prisma
+alwaysApply: false
+---
+
+# Database docs sync
+
+[`prisma/schema.prisma`](prisma/schema.prisma) is the code source of truth. [`DATABASE.md`](DATABASE.md) is the human-readable schema doc.
+
+Whenever you add, remove, or change models, fields, indexes, relations, or cascade rules in `schema.prisma`:
+
+1. Update `DATABASE.md` in the same change: ER diagram, table sections, and “What is not stored” if needed.
+2. Do not put the live schema only in `PLAN.md` or `README.md` — those should link to `DATABASE.md`.
+3. If seed or app conventions change (e.g. `MediaExample.kind` values, tag pruning), reflect that in `DATABASE.md` notes.
+
+Skip updating `DATABASE.md` only for non-schema edits (comments-only in schema with no structural meaning).
