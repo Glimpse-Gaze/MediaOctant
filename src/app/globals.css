@@ -52,7 +52,7 @@ body::before {
   background: color-mix(in oklab, var(--cyan) 40%, white);
 }
 
-@keyframes atlas-toast-in {
+@keyframes octant-toast-in {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -63,6 +63,6 @@ body::before {
   }
 }
 
-.atlas-toast {
-  animation: atlas-toast-in 280ms ease-out;
+.octant-toast {
+  animation: octant-toast-in 280ms ease-out;
 }

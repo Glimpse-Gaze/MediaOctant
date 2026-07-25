@@ -1,6 +1,6 @@
-/** Shared trait encoding helpers for atlas color/size and heat views. */
+/** Shared trait encoding helpers for Octant color/size and heat views. */
 
-export type AtlasViewMode = "default" | "colorSize" | "heat";
+export type OctantViewMode = "default" | "colorSize" | "heat";
 
 export type TraitMeta = {
   code: string;

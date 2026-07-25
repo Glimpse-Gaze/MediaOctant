@@ -11,7 +11,7 @@ export function SiteHeader({ admin }: { admin: boolean }) {
           >
             Media Forms
             <span className="ml-1 bg-gradient-to-r from-[var(--cyan)] via-[var(--violet)] to-[var(--coral)] bg-clip-text text-transparent">
-              Atlas
+              Octant
             </span>
           </span>
         </Link>
@@ -20,7 +20,7 @@ export function SiteHeader({ admin }: { admin: boolean }) {
             href="/"
             className="rounded-full px-3 py-1.5 text-[var(--muted)] transition hover:bg-white hover:text-[var(--ink)]"
           >
-            Atlas
+            Octant
           </Link>
           <Link
             href="/forms"

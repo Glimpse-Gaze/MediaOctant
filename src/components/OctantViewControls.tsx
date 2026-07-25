@@ -1,23 +1,23 @@
 "use client";
 
-import type { AtlasViewMode, TraitMeta } from "@/lib/atlas-viz";
-import { traitColor } from "@/lib/atlas-viz";
+import type { OctantViewMode, TraitMeta } from "@/lib/octant-viz";
+import { traitColor } from "@/lib/octant-viz";
 
-export function AtlasViewControls({
+export function OctantViewControls({
   mode,
   onModeChange,
   traits,
   traitCode,
   onTraitChange,
 }: {
-  mode: AtlasViewMode;
-  onModeChange: (mode: AtlasViewMode) => void;
+  mode: OctantViewMode;
+  onModeChange: (mode: OctantViewMode) => void;
   traits: TraitMeta[];
   traitCode: string;
   onTraitChange: (code: string) => void;
 }) {
   const showTraitPicker = mode === "colorSize" || mode === "heat";
-  const modes: Array<{ id: AtlasViewMode; label: string }> = [
+  const modes: Array<{ id: OctantViewMode; label: string }> = [
     { id: "default", label: "Default" },
     { id: "colorSize", label: "Color & size" },
     { id: "heat", label: "Heat" },
@@ -28,7 +28,7 @@ export function AtlasViewControls({
       <div
         className="inline-flex rounded-full border border-[var(--line)] bg-white/80 p-0.5 text-sm font-semibold shadow-sm"
         role="group"
-        aria-label="Atlas view mode"
+        aria-label="Octant view mode"
       >
         {modes.map((m) => (
           <button

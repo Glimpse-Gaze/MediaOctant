@@ -24,7 +24,7 @@ export default async function FormDetailPage({ params }: Props) {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link href="/" className="text-sm font-semibold text-[var(--violet)]">
-            ← Back to atlas
+            ← Back to Octant
           </Link>
           <h1
             className="mt-2 font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight"

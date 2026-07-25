@@ -1,8 +1,8 @@
 "use client";
 
 import { useId, useMemo } from "react";
-import type { TraitMeta } from "@/lib/atlas-viz";
-import { traitUnit } from "@/lib/atlas-viz";
+import type { TraitMeta } from "@/lib/octant-viz";
+import { traitUnit } from "@/lib/octant-viz";
 
 type Props = {
   traits: TraitMeta[];

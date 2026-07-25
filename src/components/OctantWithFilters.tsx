@@ -1,34 +1,34 @@
 "use client";
 
 import { Suspense, useCallback, useMemo, useState } from "react";
-import { AtlasCanvas } from "@/components/AtlasCanvas";
-import { AtlasSelectPanel, type AtlasPanelForm } from "@/components/AtlasSelectPanel";
-import { AtlasToast } from "@/components/AtlasToast";
-import { AtlasViewControls } from "@/components/AtlasViewControls";
+import { OctantCanvas } from "@/components/OctantCanvas";
+import { OctantSelectPanel, type OctantPanelForm } from "@/components/OctantSelectPanel";
+import { OctantToast } from "@/components/OctantToast";
+import { OctantViewControls } from "@/components/OctantViewControls";
 import { TagFilterPanel, useTagFilter } from "@/components/TagFilterPanel";
-import type { AtlasViewMode, TraitMeta } from "@/lib/atlas-viz";
-import type { AtlasEdge, AtlasNode } from "@/lib/similarity";
+import type { OctantViewMode, TraitMeta } from "@/lib/octant-viz";
+import type { OctantEdge, OctantNode } from "@/lib/similarity";
 import { formMatchesTags, type TagSummary } from "@/lib/tags";
 
-type FormMeta = AtlasPanelForm;
+type FormMeta = OctantPanelForm;
 
 const MAX_COMPARE = 2;
 
-function AtlasWithFiltersInner({
+function OctantWithFiltersInner({
   nodes,
   edges,
   forms,
   tags,
   traits,
 }: {
-  nodes: AtlasNode[];
-  edges: AtlasEdge[];
+  nodes: OctantNode[];
+  edges: OctantEdge[];
   forms: FormMeta[];
   tags: TagSummary[];
   traits: TraitMeta[];
 }) {
   const { selected, mode, toggleTag, setMode, clear } = useTagFilter(tags);
-  const [viewMode, setViewMode] = useState<AtlasViewMode>("default");
+  const [viewMode, setViewMode] = useState<OctantViewMode>("default");
   const [traitCode, setTraitCode] = useState(traits[0]?.code ?? "VIS");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
@@ -45,7 +45,7 @@ function AtlasWithFiltersInner({
   }, [traits, traitCode]);
 
   const handleViewMode = useCallback(
-    (next: AtlasViewMode) => {
+    (next: OctantViewMode) => {
       setViewMode(next);
       if ((next === "colorSize" || next === "heat") && !traits.some((t) => t.code === traitCode)) {
         setTraitCode(traits[0]?.code ?? "VIS");
@@ -116,7 +116,7 @@ function AtlasWithFiltersInner({
 
   return (
     <div className="flex flex-col gap-4">
-      <AtlasToast message={toast} onDismiss={dismissToast} />
+      <OctantToast message={toast} onDismiss={dismissToast} />
       <TagFilterPanel
         tags={tags}
         selected={selected}
@@ -128,7 +128,7 @@ function AtlasWithFiltersInner({
         totalCount={forms.length}
       />
 
-      <AtlasViewControls
+      <OctantViewControls
         mode={viewMode}
         onModeChange={handleViewMode}
         traits={traits}
@@ -138,7 +138,7 @@ function AtlasWithFiltersInner({
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
         <div className="min-w-0 flex-1">
-          <AtlasCanvas
+          <OctantCanvas
             nodes={nodes}
             edges={edges}
             fixedById={fixedById}
@@ -154,7 +154,7 @@ function AtlasWithFiltersInner({
         {panelForms.length > 0 ? (
           <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-auto lg:shrink-0">
             {panelForms.map((form, index) => (
-              <AtlasSelectPanel
+              <OctantSelectPanel
                 key={form.id}
                 form={form}
                 traits={traits}
@@ -171,9 +171,9 @@ function AtlasWithFiltersInner({
   );
 }
 
-export function AtlasWithFilters(props: {
-  nodes: AtlasNode[];
-  edges: AtlasEdge[];
+export function OctantWithFilters(props: {
+  nodes: OctantNode[];
+  edges: OctantEdge[];
   forms: FormMeta[];
   tags: TagSummary[];
   traits: TraitMeta[];
@@ -186,7 +186,7 @@ export function AtlasWithFilters(props: {
         </div>
       }
     >
-      <AtlasWithFiltersInner {...props} />
+      <OctantWithFiltersInner {...props} />
     </Suspense>
   );
 }

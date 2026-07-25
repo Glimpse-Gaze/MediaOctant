@@ -44,7 +44,7 @@ export async function getFormsForSimilarity(): Promise<FormForSimilarity[]> {
   }));
 }
 
-export async function getFormsForAtlas() {
+export async function getFormsForOctant() {
   const forms = await prisma.mediaForm.findMany({
     include: {
       fixedTraits: { include: { trait: true } },

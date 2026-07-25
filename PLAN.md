@@ -1,4 +1,4 @@
-# Media Forms Atlas — Build Plan
+# Media Forms Octant — Build Plan
 
 ## Goal
 
@@ -158,7 +158,7 @@ Normalized to roughly \([0,1]\).
 
 ### Public / viewer
 
-- **Home / Atlas:** full-viewport 2D map; nodes labeled; hover preview; click → detail. Edge toggle + optional “highlight neighbors.”  
+- **Home / Octant:** full-viewport 2D map; nodes labeled; hover preview; click → detail. Edge toggle + optional “highlight neighbors.”  
 - **Form detail:** name, description, radar or bar chart of 8 traits, freeform chips, media examples (gallery / embeds).  
 - **Browse list:** searchable list as alternate entry (light, not dashboard-heavy).
 
@@ -195,7 +195,7 @@ Normalized to roughly \([0,1]\).
 - Admin auth stub  
 - CRUD API for forms, fixed values, freeform traits  
 
-### Phase 2 — Atlas visualization
+### Phase 2 — Octant visualization
 
 - Similarity service  
 - Interactive map + edge toggle  
@@ -228,7 +228,7 @@ Normalized to roughly \([0,1]\).
 ## Success criteria
 
 1. Admin can add a media form with 8 scores, freeform traits, and examples (file or URL).  
-2. Atlas places forms with similar fixed (and shared freeform) profiles near each other.  
+2. Octant places forms with similar fixed (and shared freeform) profiles near each other.  
 3. Similarity edges can be shown or hidden.  
 4. Unique freeform traits appear on the form but do not move the map until shared.  
 5. Sample spreadsheet data loads as the initial dataset.  

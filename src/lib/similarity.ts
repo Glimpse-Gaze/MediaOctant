@@ -6,7 +6,7 @@ export type FormForSimilarity = {
   freeform: Array<{ nameNormalized: string; valueNormalized: string }>;
 };
 
-export type AtlasNode = {
+export type OctantNode = {
   id: string;
   name: string;
   slug: string;
@@ -14,7 +14,7 @@ export type AtlasNode = {
   y: number;
 };
 
-export type AtlasEdge = {
+export type OctantEdge = {
   source: string;
   target: string;
   similarity: number;
@@ -82,9 +82,9 @@ export function nearestNeighbors(
 }
 
 /** Deterministic 2D layout via classical MDS on distances */
-export function layoutAtlas(forms: FormForSimilarity[]): {
-  nodes: AtlasNode[];
-  edges: AtlasEdge[];
+export function layoutOctant(forms: FormForSimilarity[]): {
+  nodes: OctantNode[];
+  edges: OctantEdge[];
 } {
   // Stable input order so identical data always yields the same map
   const ordered = [...forms].sort((a, b) => a.slug.localeCompare(b.slug));
@@ -123,7 +123,7 @@ export function layoutAtlas(forms: FormForSimilarity[]): {
   }
   const scale = 280 / maxAbs;
 
-  const nodes: AtlasNode[] = ordered.map((f, i) => ({
+  const nodes: OctantNode[] = ordered.map((f, i) => ({
     id: f.id,
     name: f.name,
     slug: f.slug,
@@ -131,7 +131,7 @@ export function layoutAtlas(forms: FormForSimilarity[]): {
     y: coords[i][1] * scale,
   }));
 
-  const edges: AtlasEdge[] = [];
+  const edges: OctantEdge[] = [];
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
       const similarity = 1 - D[i][j];

@@ -1,23 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { AtlasEdge, AtlasNode } from "@/lib/similarity";
+import type { OctantEdge, OctantNode } from "@/lib/similarity";
 import {
   buildHeatField,
   traitColor,
   traitRadius,
   traitUnit,
-  type AtlasViewMode,
+  type OctantViewMode,
   type TraitMeta,
-} from "@/lib/atlas-viz";
+} from "@/lib/octant-viz";
 import { layoutNodeLabels } from "@/lib/label-layout";
 
 type Props = {
-  nodes: AtlasNode[];
-  edges: AtlasEdge[];
+  nodes: OctantNode[];
+  edges: OctantEdge[];
   /** formId -> trait scores */
   fixedById: Record<string, Record<string, number>>;
-  viewMode: AtlasViewMode;
+  viewMode: OctantViewMode;
   encodeTrait: TraitMeta;
   /** When set, nodes not in this set are dimmed/hidden */
   visibleIds?: Set<string> | null;
@@ -38,7 +38,7 @@ const PALETTE = [
   "var(--sun)",
 ];
 
-export function AtlasCanvas({
+export function OctantCanvas({
   nodes,
   edges,
   fixedById,
