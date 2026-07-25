@@ -43,7 +43,7 @@ function BrowseWithFiltersInner({
         Browse forms
       </h1>
       <p className="mt-2 text-[var(--muted)]">
-        {forms.length} media form{forms.length === 1 ? "" : "s"} in the atlas
+        {forms.length} media form{forms.length === 1 ? "" : "s"} in the Octant
       </p>
 
       <div className="mt-6">

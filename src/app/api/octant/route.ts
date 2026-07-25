@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { getFormsForSimilarity } from "@/lib/forms";
-import { layoutAtlas, nearestNeighbors } from "@/lib/similarity";
+import { layoutOctant, nearestNeighbors } from "@/lib/similarity";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -15,9 +15,9 @@ export async function GET(request: Request) {
     });
   }
 
-  const atlas = layoutAtlas(forms);
+  const octant = layoutOctant(forms);
   return NextResponse.json({
-    ...atlas,
+    ...octant,
     admin: await isAdminAuthenticated(),
   });
 }

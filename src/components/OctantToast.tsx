@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-export function AtlasToast({
+export function OctantToast({
   message,
   onDismiss,
   durationMs = 3200,
@@ -23,7 +23,7 @@ export function AtlasToast({
     <div
       role="status"
       aria-live="polite"
-      className="atlas-toast pointer-events-none fixed bottom-6 right-6 z-50 w-[min(92vw,24rem)]"
+      className="octant-toast pointer-events-none fixed bottom-6 right-6 z-50 w-[min(92vw,24rem)]"
     >
       <div className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-[var(--line)] bg-white/95 px-4 py-3 shadow-[0_16px_40px_-20px_rgba(40,70,120,0.45)] backdrop-blur-md">
         <span

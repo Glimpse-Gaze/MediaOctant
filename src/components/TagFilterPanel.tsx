@@ -278,7 +278,7 @@ export function TagChipInput({
         </ul>
       ) : null}
       <p className="mt-1 text-xs text-[var(--muted)]">
-        Tags are for filtering only — they do not change atlas proximity.
+        Tags are for filtering only — they do not change Octant proximity.
       </p>
     </div>
   );

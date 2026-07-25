@@ -1,8 +1,8 @@
-# Media Forms Atlas
+# Media Forms Octant
 
 A personal web app for cataloguing cultural and historical **media forms** (Opera, Kamishibai, Ukiyo-e, etc.) and exploring how they relate to each other.
 
-Each form is scored on a fixed set of traits. Forms with similar scores sit closer together on a 2D **atlas**. Optional **similarity edges** highlight the strongest pairwise links. You can encode a chosen trait as **color & size** or a **heat** background, open **side panels** to inspect (and compare) forms, and filter by **tags**. Freeform traits and media examples (images/videos via upload or URL) are also supported.
+Each form is scored on a fixed set of traits. Forms with similar scores sit closer together on a 2D **octant**. Optional **similarity edges** highlight the strongest pairwise links. You can encode a chosen trait as **color & size** or a **heat** background, open **side panels** to inspect (and compare) forms, and filter by **tags**. Freeform traits and media examples (images/videos via upload or URL) are also supported.
 
 Only an admin can create or edit forms. Everyone else can browse and view. The app is local-first (SQLite) and ready to move to cloud hosting later without becoming a multi-user product.
 
@@ -22,9 +22,9 @@ For product decisions and roadmap, see [PLAN.md](./PLAN.md). Sample trait data l
   - RAU Representational Autonomy  
   - TMP Temporal Structuring  
 - **Freeform traits** — custom name/value pairs; proximity bonus when two forms share the same pair (normalized exact match today; fuzzy synonyms planned later)
-- **Tags** — filter-only labels (do **not** affect atlas proximity). Free-type on admin edit with autocomplete; filter panel on Atlas and Browse with Any (OR) / All (AND). Filter state in the URL (`?tags=japan,performance&mode=and`). Unused tags are pruned when forms are deleted or tags are edited.
-- **Atlas proximity map** — 2D MDS layout from trait distance + toggleable similarity edges. Node **position** means overall similarity; Default-view colors are decorative only.
-- **Atlas view modes** (shared trait picker for the last two):
+- **Tags** — filter-only labels (do **not** affect octant proximity). Free-type on admin edit with autocomplete; filter panel on Octant and Browse with Any (OR) / All (AND). Filter state in the URL (`?tags=japan,performance&mode=and`). Unused tags are pruned when forms are deleted or tags are edited.
+- **Octant proximity map** — 2D MDS layout from trait distance + toggleable similarity edges. Node **position** means overall similarity; Default-view colors are decorative only.
+- **Octant view modes** (shared trait picker for the last two):
   - **Default** — palette-colored nodes, fixed size  
   - **Color & size** — selected trait drives node color and radius  
   - **Heat** — selected trait as a smooth background field; nodes stay even-sized  
@@ -75,11 +75,11 @@ Open [http://localhost:3000](http://localhost:3000). Admin login uses whatever y
 4. **Edges** — pairs above a similarity threshold are drawn when “Show edges” is on.
 5. **Tags / view modes** — filtering and Color&size/Heat encodings do **not** recompute layout; positions stay fixed.
 
-Core logic: [`src/lib/similarity.ts`](./src/lib/similarity.ts). Encoding helpers: [`src/lib/atlas-viz.ts`](./src/lib/atlas-viz.ts).
+Core logic: [`src/lib/similarity.ts`](./src/lib/similarity.ts). Encoding helpers: [`src/lib/octant-viz.ts`](./src/lib/octant-viz.ts).
 
 ---
 
-## Atlas interactions (cheat sheet)
+## Octant interactions (cheat sheet)
 
 | Action | Result |
 |--------|--------|
@@ -109,21 +109,21 @@ media-forms/
 └── src/
     ├── app/                # Next.js App Router (pages + API)
     ├── components/         # React UI
-    └── lib/                # Auth, DB, similarity, atlas viz, helpers
+    └── lib/                # Auth, DB, similarity, octant viz, helpers
 ```
 
 ### `src/app` — routes
 
 | Path | Role |
 |------|------|
-| `/` | Atlas map (main view) |
+| `/` | Octant map (main view) |
 | `/forms` | Browse list |
 | `/forms/[slug]` | Form detail (traits, tags, examples, neighbors) |
 | `/admin/login` | Admin password login |
 | `/admin` | Admin dashboard |
 | `/admin/forms/new` | Create form |
 | `/admin/forms/[id]` | Edit form + examples |
-| `/api/atlas` | Layout nodes/edges; optional `?neighborsOf=` |
+| `/api/octant` | Layout nodes/edges; optional `?neighborsOf=` |
 | `/api/auth/login` | `POST` login / `DELETE` logout |
 | `/api/forms` | List / create forms |
 | `/api/forms/[id]` | Get / update / delete form |
@@ -134,12 +134,12 @@ media-forms/
 
 | File | Role |
 |------|------|
-| `SiteHeader.tsx` | Nav (Atlas, Browse, Admin) |
-| `AtlasCanvas.tsx` | Map SVG, edges, heat layer, selection, labels |
-| `AtlasWithFilters.tsx` | Tag filter + view modes + compare panels |
-| `AtlasViewControls.tsx` | Default / Color & size / Heat + trait picker |
-| `AtlasSelectPanel.tsx` | Side panel: radar, bars, tags, detail link |
-| `AtlasToast.tsx` | In-app toast (e.g. max two selections) |
+| `SiteHeader.tsx` | Nav (Octant, Browse, Admin) |
+| `OctantCanvas.tsx` | Map SVG, edges, heat layer, selection, labels |
+| `OctantWithFilters.tsx` | Tag filter + view modes + compare panels |
+| `OctantViewControls.tsx` | Default / Color & size / Heat + trait picker |
+| `OctantSelectPanel.tsx` | Side panel: radar, bars, tags, detail link |
+| `OctantToast.tsx` | In-app toast (e.g. max two selections) |
 | `TraitRadar.tsx` | Radar chart for fixed traits |
 | `BrowseWithFilters.tsx` | Browse grid + tag filter |
 | `TagFilterPanel.tsx` | Filter chips, Any/All mode, admin tag chip input |
@@ -158,7 +158,7 @@ media-forms/
 | `normalize.ts` | Freeform text normalize + slug helper |
 | `similarity.ts` | Distance, neighbors, MDS layout |
 | `tags.ts` | Tag normalize, assign, filter match, prune unused |
-| `atlas-viz.ts` | Trait color/size scale + heat field |
+| `octant-viz.ts` | Trait color/size scale + heat field |
 | `label-layout.ts` | Collision-aware label placement |
 
 ### Data model (Prisma)
@@ -205,7 +205,7 @@ Still one admin — no account registry.
 - Hierarchy / taxonomy tree  
 - Fuzzy synonym matching for freeform traits  
 - Per-trait weights  
-- Axis-projection atlas mode (trait X × trait Y as map axes)  
+- Axis-projection octant mode (trait X × trait Y as map axes)  
 - Multi-user accounts  
 
 ---

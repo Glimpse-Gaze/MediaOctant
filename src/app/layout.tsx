@@ -15,7 +15,7 @@ const body = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Media Forms Atlas",
+  title: "Media Forms Octant",
   description: "Explore cultural media forms by trait proximity",
 };
 

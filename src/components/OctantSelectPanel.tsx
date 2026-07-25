@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { TraitBars } from "@/components/TraitBars";
 import { TraitRadar } from "@/components/TraitRadar";
-import type { TraitMeta } from "@/lib/atlas-viz";
+import type { TraitMeta } from "@/lib/octant-viz";
 import type { FormTag } from "@/lib/tags";
 import { buildFilterQuery } from "@/lib/tags";
 
-export type AtlasPanelForm = {
+export type OctantPanelForm = {
   id: string;
   name: string;
   slug: string;
@@ -15,13 +15,13 @@ export type AtlasPanelForm = {
   fixed: Record<string, number>;
 };
 
-export function AtlasSelectPanel({
+export function OctantSelectPanel({
   form,
   traits,
   onClose,
   eyebrow = "Selected",
 }: {
-  form: AtlasPanelForm;
+  form: OctantPanelForm;
   traits: TraitMeta[];
   onClose: () => void;
   eyebrow?: string;

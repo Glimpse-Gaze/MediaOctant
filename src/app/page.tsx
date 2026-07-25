@@ -1,17 +1,17 @@
-import { AtlasWithFilters } from "@/components/AtlasWithFilters";
-import { getFormsForAtlas, getTraitDefinitions } from "@/lib/forms";
-import { layoutAtlas } from "@/lib/similarity";
+import { OctantWithFilters } from "@/components/OctantWithFilters";
+import { getFormsForOctant, getTraitDefinitions } from "@/lib/forms";
+import { layoutOctant } from "@/lib/similarity";
 import { listTagsWithCounts } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [forms, tags, traitDefs] = await Promise.all([
-    getFormsForAtlas(),
+    getFormsForOctant(),
     listTagsWithCounts(),
     getTraitDefinitions(),
   ]);
-  const { nodes, edges } = layoutAtlas(forms);
+  const { nodes, edges } = layoutOctant(forms);
 
   const traits = traitDefs.map((t) => ({
     code: t.code,
@@ -38,7 +38,7 @@ export default async function HomePage() {
         </p>
       </section>
 
-      <AtlasWithFilters
+      <OctantWithFilters
         nodes={nodes}
         edges={edges}
         forms={forms.map((f) => ({

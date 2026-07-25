@@ -76,7 +76,7 @@ export function FormEditor({ traits, initial }: Props) {
 
   useEffect(() => {
     if (!formId) return;
-    fetch(`/api/atlas?neighborsOf=${formId}`)
+    fetch(`/api/octant?neighborsOf=${formId}`)
       .then((r) => r.json())
       .then((d) => setNeighbors(d.neighbors ?? []))
       .catch(() => {});
@@ -215,7 +215,7 @@ export function FormEditor({ traits, initial }: Props) {
       <section className="rounded-3xl border border-[var(--line)] bg-white/70 p-5">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">Tags</h2>
         <p className="mt-1 text-xs text-[var(--muted)]">
-          Used for filtering on Atlas and Browse. Type freely; existing tags autocomplete.
+          Used for filtering on Octant and Browse. Type freely; existing tags autocomplete.
         </p>
         <div className="mt-3">
           <TagChipInput value={tags} onChange={setTags} />
