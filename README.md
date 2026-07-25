@@ -99,9 +99,10 @@ Core logic: [`src/lib/similarity.ts`](./src/lib/similarity.ts). Encoding helpers
 media-forms/
 ├── PLAN.md                 # Product plan and decisions
 ├── README.md               # This file
+├── DATABASE.md             # Live DB structure (sync with schema.prisma)
 ├── reference/              # Source Excel / reference mockups
 ├── prisma/
-│   ├── schema.prisma       # Data model
+│   ├── schema.prisma       # Data model (code source of truth)
 │   ├── seed.ts             # Seeds 8 traits + 9 sample forms + demo tags
 │   └── dev.db              # Local SQLite (gitignored)
 ├── public/
@@ -162,6 +163,8 @@ media-forms/
 | `label-layout.ts` | Collision-aware label placement |
 
 ### Data model (Prisma)
+
+Full tables and ER diagram: **[DATABASE.md](./DATABASE.md)** (must stay in sync with `prisma/schema.prisma`).
 
 - **MediaForm** — name, slug, description  
 - **TraitDefinition** — fixed trait catalog (code, name, 0–10)  
