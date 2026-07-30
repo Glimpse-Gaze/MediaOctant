@@ -1,8 +1,70 @@
 import { PrismaClient } from "@prisma/client";
-import { FORMS } from "./seed-data";
-import { TRAITS } from "./traits";
 
 const prisma = new PrismaClient();
+
+const TRAITS = [
+  { code: "VIS", name: "Visual Participation", sortOrder: 1 },
+  { code: "AUD", name: "Auditory Participation", sortOrder: 2 },
+  { code: "EMB", name: "Embodied Participation", sortOrder: 3 },
+  { code: "LIV", name: "Liveness", sortOrder: 4 },
+  { code: "SEM", name: "Semantic Code", sortOrder: 5 },
+  { code: "MAT", name: "Perceived Materiality", sortOrder: 6 },
+  { code: "RAU", name: "Representational Autonomy", sortOrder: 7 },
+  { code: "TMP", name: "Temporal Structuring", sortOrder: 8 },
+] as const;
+
+/** Sample rows from reference/Media traits weighted.xlsx */
+const FORMS: Array<{
+  name: string;
+  slug: string;
+  scores: Record<(typeof TRAITS)[number]["code"], number>;
+}> = [
+  {
+    name: "Opera",
+    slug: "opera",
+    scores: { VIS: 8, AUD: 9.5, EMB: 1, LIV: 9.5, SEM: 6.5, MAT: 4, RAU: 3, TMP: 8.5 },
+  },
+  {
+    name: "Radio",
+    slug: "radio",
+    scores: { VIS: 0, AUD: 10, EMB: 1, LIV: 6, SEM: 2, MAT: 0.5, RAU: 5, TMP: 9 },
+  },
+  {
+    name: "Sculpture",
+    slug: "sculpture",
+    scores: { VIS: 9.5, AUD: 0, EMB: 1.5, LIV: 1, SEM: 9.5, MAT: 10, RAU: 9.5, TMP: 1 },
+  },
+  {
+    name: "Automata",
+    slug: "automata",
+    scores: { VIS: 8, AUD: 1.5, EMB: 3.5, LIV: 4, SEM: 8.5, MAT: 8.5, RAU: 7.5, TMP: 6 },
+  },
+  {
+    name: "Shadow Play",
+    slug: "shadow-play",
+    scores: { VIS: 8.5, AUD: 5.5, EMB: 1, LIV: 8, SEM: 7.5, MAT: 4.5, RAU: 3, TMP: 6.5 },
+  },
+  {
+    name: "Tachi-e Kamishibai",
+    slug: "tachi-e-kamishibai",
+    scores: { VIS: 9, AUD: 7, EMB: 1.5, LIV: 8, SEM: 7.5, MAT: 8, RAU: 3.5, TMP: 7.5 },
+  },
+  {
+    name: "Hira-e Kamishibai",
+    slug: "hira-e-kamishibai",
+    scores: { VIS: 9, AUD: 7, EMB: 3, LIV: 6.5, SEM: 7, MAT: 8, RAU: 6.5, TMP: 9.5 },
+  },
+  {
+    name: "Kabuki Theatre",
+    slug: "kabuki-theatre",
+    scores: { VIS: 8.5, AUD: 8, EMB: 1, LIV: 9.5, SEM: 8, MAT: 4.5, RAU: 3, TMP: 7.5 },
+  },
+  {
+    name: "Ukiyo-e (averaged)",
+    slug: "ukiyo-e-averaged",
+    scores: { VIS: 9, AUD: 0, EMB: 4, LIV: 1, SEM: 8, MAT: 10, RAU: 6, TMP: 3 },
+  },
+];
 
 async function main() {
   await prisma.mediaExample.deleteMany();
@@ -29,90 +91,80 @@ async function main() {
   }
   const byCode = Object.fromEntries(traits.map((t) => [t.code, t]));
 
-  const tagByName = new Map<string, { id: string; slug: string }>();
-
-  async function ensureTag(name: string) {
-    const existing = tagByName.get(name);
-    if (existing) return existing;
-    const slug = name.toLowerCase().replace(/\s+/g, "-");
-    const tag = await prisma.tag.create({ data: { name, slug } });
-    const entry = { id: tag.id, slug: tag.slug };
-    tagByName.set(name, entry);
-    return entry;
-  }
-
   for (const form of FORMS) {
-    const created = await prisma.mediaForm.create({
+    await prisma.mediaForm.create({
       data: {
         name: form.name,
         slug: form.slug,
-        description: form.description,
+        description: "",
         fixedTraits: {
           create: TRAITS.map((t) => ({
             traitId: byCode[t.code].id,
             value: form.scores[t.code],
-            rationale: form.rationales[t.code] ?? "",
           })),
         },
-        freeformTraits: form.freeform
-          ? {
-              create: form.freeform.map((f) => ({
-                nameDisplay: f.name,
-                valueDisplay: f.value,
-                nameNormalized: f.name.toLowerCase(),
-                valueNormalized: f.value.toLowerCase(),
-              })),
-            }
-          : undefined,
       },
     });
-
-    if (form.tags?.length) {
-      for (const tagName of form.tags) {
-        const tag = await ensureTag(tagName);
-        await prisma.mediaFormTag.create({
-          data: { formId: created.id, tagId: tag.id },
-        });
-      }
-    }
   }
 
-  // Legacy demo tag links for reference forms without explicit tags
-  const japan = await ensureTag("Japan");
-  const performance = await ensureTag("performance");
-  const visualArt = await ensureTag("visual-art");
-  const cinema = await ensureTag("cinema");
+  // Demo freeform overlap: Japan on three forms so proximity bonus is visible
+  const tachi = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "tachi-e-kamishibai" },
+  });
+  const hira = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "hira-e-kamishibai" },
+  });
+  const kabuki = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "kabuki-theatre" },
+  });
+  const opera = await prisma.mediaForm.findUniqueOrThrow({ where: { slug: "opera" } });
+  const sculpture = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "sculpture" },
+  });
+  const ukiyoe = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "ukiyo-e-averaged" },
+  });
+  const shadow = await prisma.mediaForm.findUniqueOrThrow({
+    where: { slug: "shadow-play" },
+  });
 
-  const legacyLinks: Array<{ slug: string; tags: string[] }> = [
-    { slug: "opera", tags: ["performance"] },
-    { slug: "shadow-play", tags: ["performance"] },
-    { slug: "sculpture", tags: ["visual-art"] },
-    { slug: "ukiyo-e-averaged", tags: ["Japan", "visual-art"] },
-    { slug: "kabuki-theatre", tags: ["Japan", "performance"] },
-    { slug: "tachi-e-kamishibai", tags: ["Japan", "performance"] },
-    { slug: "hira-e-kamishibai", tags: ["Japan", "performance"] },
-  ];
+  for (const form of [tachi, hira, kabuki]) {
+    await prisma.freeformTrait.create({
+      data: {
+        formId: form.id,
+        nameDisplay: "Origin",
+        valueDisplay: "Japan",
+        nameNormalized: "origin",
+        valueNormalized: "japan",
+      },
+    });
+  }
 
-  const tagLookup = Object.fromEntries(
-    [...tagByName.entries()].map(([name, tag]) => [name, tag.id]),
+  const japan = await prisma.tag.create({ data: { name: "Japan", slug: "japan" } });
+  const performance = await prisma.tag.create({
+    data: { name: "performance", slug: "performance" },
+  });
+  const visualArt = await prisma.tag.create({
+    data: { name: "visual-art", slug: "visual-art" },
+  });
+
+  async function link(formId: string, tagId: string) {
+    await prisma.mediaFormTag.create({ data: { formId, tagId } });
+  }
+
+  for (const form of [tachi, hira, kabuki, ukiyoe]) {
+    await link(form.id, japan.id);
+  }
+  for (const form of [opera, kabuki, shadow, tachi, hira]) {
+    await link(form.id, performance.id);
+  }
+  for (const form of [sculpture, ukiyoe]) {
+    await link(form.id, visualArt.id);
+  }
+
+  console.log(
+    `Seeded ${TRAITS.length} traits, ${FORMS.length} media forms, and 3 demo tags.`,
   );
-  tagLookup.Japan = japan.id;
-  tagLookup.performance = performance.id;
-  tagLookup["visual-art"] = visualArt.id;
-  tagLookup.cinema = cinema.id;
-
-  for (const { slug, tags } of legacyLinks) {
-    const form = await prisma.mediaForm.findUniqueOrThrow({ where: { slug } });
-    const existing = await prisma.mediaFormTag.findMany({ where: { formId: form.id } });
-    if (existing.length > 0) continue;
-    for (const tagName of tags) {
-      await prisma.mediaFormTag.create({
-        data: { formId: form.id, tagId: tagLookup[tagName] },
-      });
-    }
-  }
-
-  console.log(`Seeded ${TRAITS.length} traits and ${FORMS.length} media forms.`);
 }
 
 main()

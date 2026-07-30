@@ -23,7 +23,6 @@ type Props = {
     slug: string;
     description: string;
     fixedTraits: Record<string, number>;
-    traitRationales?: Record<string, string>;
     freeformTraits: Array<{ nameDisplay: string; valueDisplay: string }>;
     tags?: string[];
     examples: Example[];
@@ -31,18 +30,10 @@ type Props = {
 };
 
 type FreeformRow = { nameDisplay: string; valueDisplay: string };
-type FixedRow = { value: number; rationale: string };
 
-function defaultFixed(traits: TraitDef[], initial?: Props["initial"]): Record<string, FixedRow> {
-  return Object.fromEntries(
-    traits.map((t) => [
-      t.code,
-      {
-        value: initial?.fixedTraits?.[t.code] ?? 5,
-        rationale: initial?.traitRationales?.[t.code] ?? "",
-      },
-    ]),
-  );
+function defaultFixed(traits: TraitDef[], initial?: Props["initial"]) {
+  const base = Object.fromEntries(traits.map((t) => [t.code, 5]));
+  return { ...base, ...(initial?.fixedTraits ?? {}) };
 }
 
 export function FormEditor({ traits, initial }: Props) {
@@ -51,7 +42,7 @@ export function FormEditor({ traits, initial }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [fixed, setFixed] = useState<Record<string, FixedRow>>(() =>
+  const [fixed, setFixed] = useState<Record<string, number>>(() =>
     defaultFixed(traits, initial),
   );
   const [freeform, setFreeform] = useState<FreeformRow[]>(
@@ -96,19 +87,11 @@ export function FormEditor({ traits, initial }: Props) {
       name,
       slug: slug || undefined,
       description,
-      fixedTraits: Object.fromEntries(
-        traits.map((t) => [
-          t.code,
-          {
-            value: fixed[t.code]?.value ?? 0,
-            rationale: fixed[t.code]?.rationale ?? "",
-          },
-        ]),
-      ),
+      fixedTraits: fixed,
       freeformTraits: freeform.filter((t) => t.nameDisplay.trim() && t.valueDisplay.trim()),
       tags,
     }),
-    [name, slug, description, fixed, freeform, tags, traits],
+    [name, slug, description, fixed, freeform, tags],
   );
 
   async function onSubmit(e: FormEvent) {
@@ -243,53 +226,27 @@ export function FormEditor({ traits, initial }: Props) {
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
           Fixed traits (0–10)
         </h2>
-        <div className="mt-4 grid gap-4">
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           {traits.map((t) => (
-            <div key={t.code} className="rounded-2xl border border-[var(--line)] bg-white p-4">
-              <label className="block text-sm font-semibold">
-                <span className="flex justify-between">
-                  <span>
-                    {t.code} · {t.name}
-                  </span>
-                  <span className="tabular-nums text-[var(--muted)]">{fixed[t.code]?.value ?? 0}</span>
+            <label key={t.code} className="block text-sm font-semibold">
+              <span className="flex justify-between">
+                <span>
+                  {t.code} · {t.name}
                 </span>
-                <input
-                  type="range"
-                  min={t.minValue}
-                  max={t.maxValue}
-                  step={0.5}
-                  value={fixed[t.code]?.value ?? 0}
-                  onChange={(e) =>
-                    setFixed((prev) => ({
-                      ...prev,
-                      [t.code]: {
-                        ...prev[t.code],
-                        value: Number(e.target.value),
-                      },
-                    }))
-                  }
-                  className="mt-2 w-full accent-[var(--violet)]"
-                />
-              </label>
-              <label className="mt-3 block text-xs font-semibold text-[var(--muted)]">
-                Rationale
-                <textarea
-                  value={fixed[t.code]?.rationale ?? ""}
-                  onChange={(e) =>
-                    setFixed((prev) => ({
-                      ...prev,
-                      [t.code]: {
-                        ...prev[t.code],
-                        rationale: e.target.value,
-                      },
-                    }))
-                  }
-                  rows={2}
-                  placeholder="Why this score?"
-                  className="mt-1 w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm font-normal text-[var(--ink)]"
-                />
-              </label>
-            </div>
+                <span className="tabular-nums text-[var(--muted)]">{fixed[t.code]}</span>
+              </span>
+              <input
+                type="range"
+                min={t.minValue}
+                max={t.maxValue}
+                step={0.5}
+                value={fixed[t.code] ?? 0}
+                onChange={(e) =>
+                  setFixed((prev) => ({ ...prev, [t.code]: Number(e.target.value) }))
+                }
+                className="mt-2 w-full accent-[var(--violet)]"
+              />
+            </label>
           ))}
         </div>
       </section>

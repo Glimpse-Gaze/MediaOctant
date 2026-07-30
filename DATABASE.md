@@ -51,7 +51,6 @@ erDiagram
     string formId FK
     string traitId FK
     float value
-    string rationale
   }
 
   FreeformTrait {
@@ -149,7 +148,6 @@ Score of one form on one fixed trait.
 | `formId` | `String` | FK → `MediaForm` |
 | `traitId` | `String` | FK → `TraitDefinition` |
 | `value` | `Float` | Score in trait range |
-| `rationale` | `String` | Default `""`; optional justification for the score |
 
 **Constraints:** `@@unique([formId, traitId])`. Cascade delete from form or trait.
 
