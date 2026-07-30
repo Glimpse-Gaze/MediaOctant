@@ -101,6 +101,7 @@ async function main() {
           create: TRAITS.map((t) => ({
             traitId: byCode[t.code].id,
             value: form.scores[t.code],
+            rationale: "",
           })),
         },
       },

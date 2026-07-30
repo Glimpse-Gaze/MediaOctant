@@ -51,10 +51,11 @@ model TraitDefinition {
 }
 
 model FixedTraitValue {
-  id      String @id @default(cuid())
-  formId  String
-  traitId String
-  value   Float
+  id        String @id @default(cuid())
+  formId    String
+  traitId   String
+  value     Float
+  rationale String @default("")
 
   form  MediaForm       @relation(fields: [formId], references: [id], onDelete: Cascade)
   trait TraitDefinition @relation(fields: [traitId], references: [id], onDelete: Cascade)

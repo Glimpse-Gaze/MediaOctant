@@ -10,14 +10,29 @@ const freeformSchema = z.object({
   valueDisplay: z.string().min(1),
 });
 
+const fixedTraitSchema = z.union([
+  z.number().min(0).max(10),
+  z.object({
+    value: z.number().min(0).max(10),
+    rationale: z.string().optional().default(""),
+  }),
+]);
+
 const formSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional().default(""),
   slug: z.string().optional(),
-  fixedTraits: z.record(z.string(), z.number().min(0).max(10)),
+  fixedTraits: z.record(z.string(), fixedTraitSchema),
   freeformTraits: z.array(freeformSchema).optional().default([]),
   tags: z.array(z.string()).optional().default([]),
 });
+
+function parseFixedTrait(input: z.infer<typeof fixedTraitSchema>) {
+  if (typeof input === "number") {
+    return { value: input, rationale: "" };
+  }
+  return { value: input.value, rationale: input.rationale ?? "" };
+}
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -63,14 +78,16 @@ export async function PUT(request: Request, ctx: Ctx) {
       });
 
       for (const t of traits) {
+        const parsed = parseFixedTrait(data.fixedTraits[t.code] ?? 0);
         await tx.fixedTraitValue.upsert({
           where: { formId_traitId: { formId: id, traitId: t.id } },
           create: {
             formId: id,
             traitId: t.id,
-            value: data.fixedTraits[t.code] ?? 0,
+            value: parsed.value,
+            rationale: parsed.rationale,
           },
-          update: { value: data.fixedTraits[t.code] ?? 0 },
+          update: { value: parsed.value, rationale: parsed.rationale },
         });
       }
 

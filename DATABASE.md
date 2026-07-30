@@ -2,7 +2,7 @@
 
 Canonical description of the Prisma / SQLite schema. **Source of truth for the schema code:** [`prisma/schema.prisma`](./prisma/schema.prisma). Keep this file in sync whenever that schema changes.
 
-**Provider:** SQLite locally (`DATABASE_URL=file:./dev.db` under `prisma/`). Swap to Postgres for cloud with the same models.
+**Provider:** PostgreSQL in cloud (`DATABASE_URL=postgresql://…`). SQLite remains supported for local dev if you point `DATABASE_URL` at a file URL and set `provider = "sqlite"` in `schema.prisma`.
 
 ---
 
@@ -51,6 +51,7 @@ erDiagram
     string formId FK
     string traitId FK
     float value
+    string rationale
   }
 
   FreeformTrait {
@@ -148,6 +149,7 @@ Score of one form on one fixed trait.
 | `formId` | `String` | FK → `MediaForm` |
 | `traitId` | `String` | FK → `TraitDefinition` |
 | `value` | `Float` | Score in trait range |
+| `rationale` | `String` | Default `""`; optional justification for the score |
 
 **Constraints:** `@@unique([formId, traitId])`. Cascade delete from form or trait.
 
@@ -203,6 +205,15 @@ Cascade delete from form. Either `url` or `storagePath` is expected at the app l
 - 8 `TraitDefinition` rows  
 - Sample `MediaForm` + `FixedTraitValue` (+ some freeform) from the reference spreadsheet  
 - Demo `Tag` / `MediaFormTag` rows  
+
+For cloud PostgreSQL, use the additive rated-form upsert instead of wiping the catalog:
+
+```bash
+npm run db:push
+npm run db:seed-rated
+```
+
+[`prisma/seed-rated-forms.ts`](./prisma/seed-rated-forms.ts) upserts the seven evaluated media forms (with trait rationales) without deleting existing rows.
 
 ---
 
