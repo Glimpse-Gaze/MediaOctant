@@ -56,11 +56,11 @@ async function upsertForm(form: SeedForm, byCode: Record<string, { id: string }>
         formId: saved.id,
         traitId: byCode[t.code].id,
         value: form.scores[t.code],
-        rationale: form.rationales[t.code] ?? "",
+        description: form.descriptions[t.code] ?? "",
       },
       update: {
         value: form.scores[t.code],
-        rationale: form.rationales[t.code] ?? "",
+        description: form.descriptions[t.code] ?? "",
       },
     });
   }

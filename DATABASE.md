@@ -51,7 +51,7 @@ erDiagram
     string formId FK
     string traitId FK
     float value
-    string rationale
+    string description
   }
 
   FreeformTrait {
@@ -149,7 +149,7 @@ Score of one form on one fixed trait.
 | `formId` | `String` | FK → `MediaForm` |
 | `traitId` | `String` | FK → `TraitDefinition` |
 | `value` | `Float` | Score in trait range |
-| `rationale` | `String` | Default `""`; optional justification for the score |
+| `description` | `String` | Default `""`; optional justification for the score |
 
 **Constraints:** `@@unique([formId, traitId])`. Cascade delete from form or trait.
 
@@ -213,7 +213,7 @@ npm run db:push
 npm run db:seed-rated
 ```
 
-[`prisma/seed-rated-forms.ts`](./prisma/seed-rated-forms.ts) upserts the seven evaluated media forms (with trait rationales) without deleting existing rows.
+[`prisma/seed-rated-forms.ts`](./prisma/seed-rated-forms.ts) upserts the seven evaluated media forms (with per-trait descriptions) without deleting existing rows.
 
 ---
 

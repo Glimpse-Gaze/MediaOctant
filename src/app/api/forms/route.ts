@@ -15,7 +15,7 @@ const fixedTraitSchema = z.union([
   z.number().min(0).max(10),
   z.object({
     value: z.number().min(0).max(10),
-    rationale: z.string().optional().default(""),
+    description: z.string().optional().default(""),
   }),
 ]);
 
@@ -30,9 +30,9 @@ const formSchema = z.object({
 
 function parseFixedTrait(input: z.infer<typeof fixedTraitSchema>) {
   if (typeof input === "number") {
-    return { value: input, rationale: "" };
+    return { value: input, description: "" };
   }
-  return { value: input.value, rationale: input.rationale ?? "" };
+  return { value: input.value, description: input.description ?? "" };
 }
 
 export async function GET() {
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
               return {
                 traitId: t.id,
                 value: parsed.value,
-                rationale: parsed.rationale,
+                description: parsed.description,
               };
             }),
           },

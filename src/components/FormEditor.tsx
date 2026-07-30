@@ -23,7 +23,7 @@ type Props = {
     slug: string;
     description: string;
     fixedTraits: Record<string, number>;
-    traitRationales?: Record<string, string>;
+    traitDescriptions?: Record<string, string>;
     freeformTraits: Array<{ nameDisplay: string; valueDisplay: string }>;
     tags?: string[];
     examples: Example[];
@@ -31,7 +31,7 @@ type Props = {
 };
 
 type FreeformRow = { nameDisplay: string; valueDisplay: string };
-type FixedRow = { value: number; rationale: string };
+type FixedRow = { value: number; description: string };
 
 function defaultFixed(traits: TraitDef[], initial?: Props["initial"]): Record<string, FixedRow> {
   return Object.fromEntries(
@@ -39,7 +39,7 @@ function defaultFixed(traits: TraitDef[], initial?: Props["initial"]): Record<st
       t.code,
       {
         value: initial?.fixedTraits?.[t.code] ?? 5,
-        rationale: initial?.traitRationales?.[t.code] ?? "",
+        description: initial?.traitDescriptions?.[t.code] ?? "",
       },
     ]),
   );
@@ -101,7 +101,7 @@ export function FormEditor({ traits, initial }: Props) {
           t.code,
           {
             value: fixed[t.code]?.value ?? 0,
-            rationale: fixed[t.code]?.rationale ?? "",
+            description: fixed[t.code]?.description ?? "",
           },
         ]),
       ),
@@ -274,13 +274,13 @@ export function FormEditor({ traits, initial }: Props) {
               <label className="mt-3 block text-xs font-semibold text-[var(--muted)]">
                 Rationale
                 <textarea
-                  value={fixed[t.code]?.rationale ?? ""}
+                  value={fixed[t.code]?.description ?? ""}
                   onChange={(e) =>
                     setFixed((prev) => ({
                       ...prev,
                       [t.code]: {
                         ...prev[t.code],
-                        rationale: e.target.value,
+                        description: e.target.value,
                       },
                     }))
                   }
