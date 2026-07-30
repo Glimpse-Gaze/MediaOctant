@@ -41,7 +41,10 @@ export default async function EditFormPage({ params }: Props) {
           slug: form.slug,
           description: form.description,
           fixedTraits: Object.fromEntries(
-            form.fixedTraits.map((v) => [v.trait.code, v.value]),
+            form.fixedTraits.map((v) => [
+              v.trait.code,
+              { value: v.value, note: v.note },
+            ]),
           ),
           freeformTraits: form.freeformTraits.map((t) => ({
             nameDisplay: t.nameDisplay,

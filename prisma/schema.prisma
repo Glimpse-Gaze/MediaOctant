@@ -55,6 +55,7 @@ model FixedTraitValue {
   formId  String
   traitId String
   value   Float
+  note    String @default("")
 
   form  MediaForm       @relation(fields: [formId], references: [id], onDelete: Cascade)
   trait TraitDefinition @relation(fields: [traitId], references: [id], onDelete: Cascade)

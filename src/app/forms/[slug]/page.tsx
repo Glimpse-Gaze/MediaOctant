@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getFormBySlug, getFormsForSimilarity } from "@/lib/forms";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { nearestNeighbors } from "@/lib/similarity";
-import { TraitBars } from "@/components/TraitBars";
+import { TraitSplitFocus } from "@/components/TraitSplitFocus";
 import { ExampleGallery } from "@/components/ExampleGallery";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function FormDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <Link href="/" className="text-sm font-semibold text-[var(--violet)]">
             ← Back to Octant
           </Link>
@@ -33,7 +33,7 @@ export default async function FormDetailPage({ params }: Props) {
             {form.name}
           </h1>
           {form.description ? (
-            <p className="mt-3 max-w-2xl text-[var(--muted)]">{form.description}</p>
+            <p className="mt-3 text-[var(--muted)]">{form.description}</p>
           ) : null}
           {form.tags.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -63,12 +63,13 @@ export default async function FormDetailPage({ params }: Props) {
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
           Fixed traits
         </h2>
-        <TraitBars
+        <TraitSplitFocus
           traits={form.fixedTraits.map((v) => ({
             code: v.trait.code,
             name: v.trait.name,
             value: v.value,
             max: v.trait.maxValue,
+            note: v.note,
           }))}
         />
       </section>

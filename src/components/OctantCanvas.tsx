@@ -50,14 +50,26 @@ export function OctantCanvas({
   onNodeClick,
   panelOpen = false,
 }: Props) {
+  const viewportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const heatRef = useRef<HTMLCanvasElement>(null);
   const baseHeightRef = useRef(560);
   const panelOpenRef = useRef(panelOpen);
+  const zoomRef = useRef(1);
+  const panRef = useRef({ x: 0, y: 0 });
+  const draggingRef = useRef(false);
+  const dragMovedRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   panelOpenRef.current = panelOpen;
   const [showEdges, setShowEdges] = useState(true);
   const [hovered, setHovered] = useState<string | null>(null);
   const [size, setSize] = useState({ w: 900, h: 560 });
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
 
   useEffect(() => {
     const el = svgRef.current?.parentElement;
@@ -209,6 +221,93 @@ export function OctantCanvas({
     return isHovered ? 18 : 14;
   }
 
+  function zoomAtPoint(clientX: number, clientY: number, nextZoom: number) {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+    const rect = svg.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+    const currentZoom = zoomRef.current;
+    const currentPan = panRef.current;
+    const contentX = (sx - currentPan.x) / currentZoom;
+    const contentY = (sy - currentPan.y) / currentZoom;
+    const nextPanX = sx - contentX * clamped;
+    const nextPanY = sy - contentY * clamped;
+    zoomRef.current = clamped;
+    panRef.current = { x: nextPanX, y: nextPanY };
+    setZoom(clamped);
+    setPan({ x: nextPanX, y: nextPanY });
+  }
+
+  function stepZoom(direction: 1 | -1) {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    zoomAtPoint(cx, cy, zoom + direction * 0.25);
+  }
+
+  function resetZoom() {
+    zoomRef.current = 1;
+    panRef.current = { x: 0, y: 0 };
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    function onWheel(e: WheelEvent) {
+      e.preventDefault();
+      const delta = -e.deltaY;
+      const factor = delta > 0 ? 1.1 : 0.9;
+      zoomAtPoint(e.clientX, e.clientY, zoomRef.current * factor);
+    }
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", onWheel);
+  }, []);
+
+  function beginDrag(clientX: number, clientY: number) {
+    draggingRef.current = true;
+    dragMovedRef.current = false;
+    dragStartRef.current = {
+      x: clientX,
+      y: clientY,
+      panX: panRef.current.x,
+      panY: panRef.current.y,
+    };
+    setIsDragging(true);
+  }
+
+  function continueDrag(clientX: number, clientY: number) {
+    if (!draggingRef.current) return;
+    const dx = clientX - dragStartRef.current.x;
+    const dy = clientY - dragStartRef.current.y;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+      dragMovedRef.current = true;
+    }
+    const nextPan = {
+      x: dragStartRef.current.panX + dx,
+      y: dragStartRef.current.panY + dy,
+    };
+    panRef.current = nextPan;
+    setPan(nextPan);
+  }
+
+  function endDrag() {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+    if (dragMovedRef.current) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+  }
+
   return (
     <div className="relative flex h-full min-h-[520px] flex-col">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -232,9 +331,60 @@ export function OctantCanvas({
       </div>
 
       <div
+        ref={viewportRef}
         className="relative flex-1 overflow-hidden rounded-3xl border border-[var(--line)] bg-white/55 shadow-[0_20px_60px_-30px_rgba(40,70,120,0.35)]"
-        onClick={() => onClearSelection()}
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
+        onPointerDown={(e) => {
+          if (e.button !== 0) return;
+          beginDrag(e.clientX, e.clientY);
+        }}
+        onPointerMove={(e) => continueDrag(e.clientX, e.clientY)}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={endDrag}
+        onClick={() => {
+          if (suppressClickRef.current) return;
+          onClearSelection();
+        }}
       >
+        <div
+          className="absolute right-3 top-3 z-30 inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-white/92 p-1 text-sm font-semibold shadow-sm"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => stepZoom(-1)}
+            disabled={zoom <= MIN_ZOOM + 0.001}
+            className="rounded-full px-2 py-1 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Zoom out"
+            title="Zoom out"
+          >
+            −
+          </button>
+          <span className="min-w-[3.5rem] text-center text-xs text-[var(--muted)]">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={() => stepZoom(1)}
+            disabled={zoom >= MAX_ZOOM - 0.001}
+            className="rounded-full px-2 py-1 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Zoom in"
+            title="Zoom in"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={resetZoom}
+            disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
+            className="ml-1 rounded-full px-2 py-1 text-xs text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40"
+            title="Reset zoom"
+          >
+            Reset
+          </button>
+        </div>
         <div
           className="pointer-events-none absolute inset-0 opacity-70"
           style={{
@@ -246,7 +396,11 @@ export function OctantCanvas({
         <canvas
           ref={heatRef}
           className="pointer-events-none absolute inset-0 z-[5] h-full w-full"
-          style={{ opacity: viewMode === "heat" ? 1 : 0 }}
+          style={{
+            opacity: viewMode === "heat" ? 1 : 0,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: "0 0",
+          }}
           aria-hidden
         />
         {filtering && visibleCount === 0 ? (
@@ -263,6 +417,7 @@ export function OctantCanvas({
           className="relative z-10"
           onClick={(e) => e.stopPropagation()}
         >
+          <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {showEdges &&
             edges.map((e) => {
               const a = byId[e.source];
@@ -281,7 +436,7 @@ export function OctantCanvas({
                   x2={b.px}
                   y2={b.py}
                   stroke="url(#edgeGrad)"
-                  strokeWidth={1 + e.similarity * 3}
+                  strokeWidth={(1 + e.similarity * 3) / zoom}
                   strokeOpacity={active ? 0.55 : 0.08}
                   className="transition-opacity duration-300"
                 />
@@ -310,10 +465,10 @@ export function OctantCanvas({
                   style={{ transition: "opacity 200ms ease", pointerEvents: "none" }}
                 >
                   <circle
-                    r={10}
+                    r={10 / zoom}
                     fill={viewMode === "default" ? PALETTE[i % PALETTE.length] : "#cbd5e1"}
                     stroke="white"
-                    strokeWidth={2}
+                    strokeWidth={2 / zoom}
                   />
                 </g>
               );
@@ -334,6 +489,7 @@ export function OctantCanvas({
                 onMouseEnter={() => setHovered(n.id)}
                 onMouseLeave={() => setHovered(null)}
                 onClick={(e) => {
+                  if (suppressClickRef.current) return;
                   e.stopPropagation();
                   onNodeClick(n.id, e.metaKey || e.ctrlKey);
                 }}
@@ -342,18 +498,18 @@ export function OctantCanvas({
               >
                 {isSelected ? (
                   <circle
-                    r={nodeRadius(n, isHovered) + 6}
+                    r={(nodeRadius(n, isHovered) + 6) / zoom}
                     fill="none"
                     stroke="var(--violet)"
-                    strokeWidth={2.5}
+                    strokeWidth={2.5 / zoom}
                     strokeOpacity={0.7}
                   />
                 ) : null}
                 <circle
-                  r={nodeRadius(n, isHovered)}
+                  r={nodeRadius(n, isHovered) / zoom}
                   fill={nodeFill(n, i)}
                   stroke={viewMode === "heat" ? "var(--ink)" : "white"}
-                  strokeWidth={viewMode === "heat" ? 1.5 : 3}
+                  strokeWidth={(viewMode === "heat" ? 1.5 : 3) / zoom}
                   style={{
                     filter:
                       viewMode === "heat"
@@ -363,14 +519,14 @@ export function OctantCanvas({
                   }}
                 />
                 <text
-                  x={label.dx}
-                  y={label.dy}
+                  x={label.dx / zoom}
+                  y={label.dy / zoom}
                   textAnchor={label.textAnchor}
                   dominantBaseline={label.dominantBaseline}
                   className="select-none"
                   style={{
                     fontFamily: "var(--font-display)",
-                    fontSize: 12,
+                    fontSize: 12 / zoom,
                     fontWeight: 700,
                     fill: "var(--ink)",
                   }}
@@ -380,6 +536,7 @@ export function OctantCanvas({
               </g>
             );
           })}
+          </g>
         </svg>
       </div>
     </div>
