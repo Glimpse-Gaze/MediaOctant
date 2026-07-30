@@ -69,6 +69,7 @@ export default async function FormDetailPage({ params }: Props) {
             name: v.trait.name,
             value: v.value,
             max: v.trait.maxValue,
+            rationale: v.rationale,
           }))}
         />
       </section>
