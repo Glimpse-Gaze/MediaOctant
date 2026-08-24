@@ -51,6 +51,7 @@ erDiagram
     string formId FK
     string traitId FK
     float value
+    string note
   }
 
   FreeformTrait {
@@ -140,7 +141,7 @@ Fixed trait vocabulary (seeded: VIS, AUD, EMB, LIV, SEM, MAT, RAU, TMP).
 
 ### `FixedTraitValue`
 
-Score of one form on one fixed trait.
+Score of one form on one fixed trait, with optional rationale.
 
 | Column | Type | Notes |
 |--------|------|--------|
@@ -148,6 +149,7 @@ Score of one form on one fixed trait.
 | `formId` | `String` | FK → `MediaForm` |
 | `traitId` | `String` | FK → `TraitDefinition` |
 | `value` | `Float` | Score in trait range |
+| `note` | `String` | Why this score was chosen; default `""`. Shown on form detail when non-empty. Does **not** affect proximity. |
 
 **Constraints:** `@@unique([formId, traitId])`. Cascade delete from form or trait.
 

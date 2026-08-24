@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { makeSlug, normalizeTraitText } from "@/lib/normalize";
 import { listForms } from "@/lib/forms";
 import { setFormTags } from "@/lib/tags";
+import {
+  fixedTraitEntrySchema,
+  normalizeFixedTraitEntry,
+} from "@/lib/fixed-traits";
 
 const freeformSchema = z.object({
   nameDisplay: z.string().min(1),
@@ -15,7 +19,7 @@ const formSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional().default(""),
   slug: z.string().optional(),
-  fixedTraits: z.record(z.string(), z.number().min(0).max(10)),
+  fixedTraits: z.record(z.string(), fixedTraitEntrySchema),
   freeformTraits: z.array(freeformSchema).optional().default([]),
   tags: z.array(z.string()).optional().default([]),
 });
@@ -47,10 +51,14 @@ export async function POST(request: Request) {
           slug,
           description: data.description ?? "",
           fixedTraits: {
-            create: traits.map((t) => ({
-              traitId: t.id,
-              value: data.fixedTraits[t.code] ?? 0,
-            })),
+            create: traits.map((t) => {
+              const entry = normalizeFixedTraitEntry(data.fixedTraits[t.code]);
+              return {
+                traitId: t.id,
+                value: entry.value,
+                note: entry.note,
+              };
+            }),
           },
           freeformTraits: {
             create: data.freeformTraits.map((t) => ({

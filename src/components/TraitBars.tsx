@@ -1,7 +1,12 @@
 export function TraitBars({
   traits,
 }: {
-  traits: Array<{ code: string; name: string; value: number; max: number }>;
+  traits: Array<{
+    code: string;
+    name: string;
+    value: number;
+    max: number;
+  }>;
 }) {
   const colors = ["#22c5c5", "#7b6cff", "#ff7a59", "#7ce38b", "#ffd166", "#5b8def", "#ff8fab", "#4dd0c6"];
 

@@ -15,6 +15,8 @@ type Example = {
   caption: string;
 };
 
+type FixedTraitState = { value: number; note: string };
+
 type Props = {
   traits: TraitDef[];
   initial?: {
@@ -22,7 +24,7 @@ type Props = {
     name: string;
     slug: string;
     description: string;
-    fixedTraits: Record<string, number>;
+    fixedTraits: Record<string, FixedTraitState>;
     freeformTraits: Array<{ nameDisplay: string; valueDisplay: string }>;
     tags?: string[];
     examples: Example[];
@@ -32,7 +34,9 @@ type Props = {
 type FreeformRow = { nameDisplay: string; valueDisplay: string };
 
 function defaultFixed(traits: TraitDef[], initial?: Props["initial"]) {
-  const base = Object.fromEntries(traits.map((t) => [t.code, 5]));
+  const base = Object.fromEntries(
+    traits.map((t) => [t.code, { value: 5, note: "" } satisfies FixedTraitState]),
+  );
   return { ...base, ...(initial?.fixedTraits ?? {}) };
 }
 
@@ -42,7 +46,7 @@ export function FormEditor({ traits, initial }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [fixed, setFixed] = useState<Record<string, number>>(() =>
+  const [fixed, setFixed] = useState<Record<string, FixedTraitState>>(() =>
     defaultFixed(traits, initial),
   );
   const [freeform, setFreeform] = useState<FreeformRow[]>(
@@ -226,28 +230,60 @@ export function FormEditor({ traits, initial }: Props) {
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
           Fixed traits (0–10)
         </h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {traits.map((t) => (
-            <label key={t.code} className="block text-sm font-semibold">
-              <span className="flex justify-between">
-                <span>
-                  {t.code} · {t.name}
-                </span>
-                <span className="tabular-nums text-[var(--muted)]">{fixed[t.code]}</span>
-              </span>
-              <input
-                type="range"
-                min={t.minValue}
-                max={t.maxValue}
-                step={0.5}
-                value={fixed[t.code] ?? 0}
-                onChange={(e) =>
-                  setFixed((prev) => ({ ...prev, [t.code]: Number(e.target.value) }))
-                }
-                className="mt-2 w-full accent-[var(--violet)]"
-              />
-            </label>
-          ))}
+        <p className="mt-1 text-xs text-[var(--muted)]">
+          Optionally explain why each score was chosen — shown on the form detail page.
+        </p>
+        <div className="mt-4 grid gap-5 md:grid-cols-2">
+          {traits.map((t) => {
+            const entry = fixed[t.code] ?? { value: 0, note: "" };
+            return (
+              <div key={t.code} className="space-y-2">
+                <label className="block text-sm font-semibold">
+                  <span className="flex justify-between">
+                    <span>
+                      {t.code} · {t.name}
+                    </span>
+                    <span className="tabular-nums text-[var(--muted)]">{entry.value}</span>
+                  </span>
+                  <input
+                    type="range"
+                    min={t.minValue}
+                    max={t.maxValue}
+                    step={0.5}
+                    value={entry.value}
+                    onChange={(e) =>
+                      setFixed((prev) => ({
+                        ...prev,
+                        [t.code]: {
+                          value: Number(e.target.value),
+                          note: prev[t.code]?.note ?? "",
+                        },
+                      }))
+                    }
+                    className="mt-2 w-full accent-[var(--violet)]"
+                  />
+                </label>
+                <label className="block text-xs font-semibold text-[var(--muted)]">
+                  Why this value?
+                  <textarea
+                    value={entry.note}
+                    onChange={(e) =>
+                      setFixed((prev) => ({
+                        ...prev,
+                        [t.code]: {
+                          value: prev[t.code]?.value ?? 0,
+                          note: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={2}
+                    placeholder="Optional rationale…"
+                    className="mt-1 w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm font-normal text-[var(--ink)]"
+                  />
+                </label>
+              </div>
+            );
+          })}
         </div>
       </section>
 
